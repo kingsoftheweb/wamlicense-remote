@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<license>
+
+    <version>1</version>
+
+    <subscriptionNumber>12121</subscriptionNumber>
+    <startDate>2022-06-11 11:11</startDate>
+    <nextPaymentDate>2023-06-11 11:11</nextPaymentDate>
+    <endDate></endDate>
+    <parentOrder>12121</parentOrder>
+    <renewalOrders>1221,23232,12121</renewalOrders>
+
+
+    <resubscriptions>
+        <subscription>
+            <ID>12121</ID>
+            <status>Initial Subscription</status>
+            <date>2022-04-04 11:10</date>
+        </subscription>
+        <subscription>
+            <ID>1213</ID>
+            <status>Resubscribed</status>
+            <date>2022-07-04 11:10</date>
+        </subscription>
+    </resubscriptions>
+
+
+    <products>
+        <product>
+            <ID>12</ID>
+            <title>WSUS Automated Maintenance - Single or Upstream</title>
+            <quantity>2</quantity>
+            <sku>SingleRoot</sku>
+        </product>
+        <product>
+            <ID>45</ID>
+            <title>WSUS Automated Maintenance</title>
+            <quantity>1</quantity>
+            <sku>SingleRoot2</sku>
+        </product>
+    </products>
+
+</license>
+

@@ -1,0 +1,20 @@
+{
+  "name": "kotw/woo-reseller",
+  "description": "Woo Reseller Plugin",
+  "keywords": [
+    "plugin",
+    "wordpress",
+    "kotw"
+  ],
+  "type": "wordpress-plugin",
+  "homepage": "https://github.com/Kings-Of-The-Web/woo-reseller-plugin",
+  "license": "",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org"
+    }
+  ],
+  "require": {
+  }
+}
