@@ -1,13 +1,13 @@
 {
-  "name": "kotw/woo-reseller",
-  "description": "Woo Reseller Plugin",
+  "name": "kotw/wamlicense",
+  "description": "WAM License",
   "keywords": [
     "plugin",
     "wordpress",
     "kotw"
   ],
   "type": "wordpress-plugin",
-  "homepage": "https://github.com/Kings-Of-The-Web/woo-reseller-plugin",
+  "homepage": "https://github.com/Kings-Of-The-Web/wamlicense-plugin",
   "license": "",
   "repositories": [
     {
