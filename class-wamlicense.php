@@ -17,8 +17,12 @@ class WAMLicense {
 			$this->update_templates();
 
 			// Find an appropiate hook other that init that only runs on my-account page.
-			add_action( 'init', array( $this, 'generate_xml_on_request' ) );
-		}
+
+
+            add_action( 'wp_enqueue_scripts', array($this,'generate_license') );
+            add_action( 'wp_footer', array($this,'add_ajax_url') );
+
+            add_action("wp_ajax_generate_xml_on_request", array($this,'generate_xml_on_request'));}
 
 	}
 
@@ -45,7 +49,6 @@ class WAMLicense {
 		$downloads_template = new DownloadsTemplate();
 		$downloads_template->update_templates();
 
-
 	}
 
 
@@ -58,19 +61,23 @@ class WAMLicense {
 	 */
 	public function generate_xml_on_request() {
 
-		if ( ! isset( $_GET['license_generate'] ) || ! isset( $_GET['user_id'] ) || isset( $_GET['product_id'] ) ) {
-			return false;
-		}
+        if (  empty( $_GET['user_id'] ) || empty( $_GET['order_id'] ) ) {
+            return false;
+        }
+
+        $user_id=(int)$_GET['user_id'];
+        $order_id=(int)$_GET['order_id'];
+
+
 
 		// Check if the incoming user_id is the same as the current user id.
 		$current_user = wp_get_current_user();
-		if ( $_GET['user_id'] !== $current_user->ID ) {
+		if ( $user_id !== $current_user->ID ) {
 			return false;
 		}
-
 		// Generate the XML.
-		$this->generate_xml( $_GET['product_id'], $_GET['user_id'] );
-
+		$this->generate_xml( $order_id, $user_id );
+        die();
 	}
 
 	/**
@@ -81,8 +88,10 @@ class WAMLicense {
 	 *
 	 * @return array
 	 */
-	public function get_product_information( $product_id, $user_id ): array {
-		$product_info = array();
+	public function get_product_information( $order_id, $user_id ): array {
+		$product_info = array(
+                'order_id' => $order_id,
+        );
 
 		// Grab the info here.
 
@@ -93,7 +102,7 @@ class WAMLicense {
 	 * This should generate an XML with the correct info for the specific product id and user.
 	 * @return void
 	 */
-	public function generate_xml( $product_info, $user_id ) {
+	public function generate_xml( $product_id, $user_id ) {
 		$product_info = $this->get_product_information( $product_id, $user_id );
 
 		// Start Generating an XML file on the fly without adding it to the server. Use "header()"
@@ -101,5 +110,17 @@ class WAMLicense {
 		$file     = fopen( $filename, 'w' );
 	}
 
-
+    /**
+     * Enqueuing JS scripts to generate License
+     */
+    public function generate_license() {
+        wp_enqueue_script( 'generate_license', plugin_dir_url( __FILE__ ) . '/assets/js/generate-license.js', array( 'jquery' ) );
+    }
+    public function add_ajax_url() {
+        ?>
+        <script type="text/javascript">
+            var ajaxurl = "<?php echo admin_url( 'admin-ajax.php' ); ?>";
+        </script>
+        <?php
+    }
 }

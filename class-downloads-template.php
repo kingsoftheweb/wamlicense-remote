@@ -27,11 +27,13 @@ class DownloadsTemplate {
 
     // Add new <a> with $_GET "license_generate=true&product_id=true&user_id=true;
     public function add_license_to_downloads_rows( $download ){
-
-        $licence_url = $download['product_id'];
+        $user_id=get_current_user_id();
+        $download_url=wc_get_endpoint_url('downloads');
+        $order_id=$download['order_id'];
+        $licence_url = $download_url.'?license_generate=true&order_id='.$order_id.'&user_id='.$user_id;
         // if not, then use global $product;
 
-        echo "<a href='$licence_url'>Download License</a>";
+        echo "<a class='download-product-license' data-order-id='$order_id' data-user-id='$user_id' href='$licence_url'>Download License</a>";
     }
 
 }
