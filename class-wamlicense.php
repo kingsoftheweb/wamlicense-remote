@@ -9,7 +9,6 @@
 
 namespace wamlicense;
 
-use DateTime;
 use SimpleXMLElement;
 
 class WAMLicense {
