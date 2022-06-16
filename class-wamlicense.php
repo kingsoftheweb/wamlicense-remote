@@ -119,6 +119,7 @@ class WAMLicense {
 			$nextPayment                = $subscription->get_time( 'next_payment' );
 			$endDate                    = $subscription->get_time( 'end' );
 			$user_final_subscriptions[] = array(
+                'subscription_title'=>'Subscription_'.$subscription_id,
 				'subscription_id'                => $subscription_id,
 				'subscription_start_date'        => $startDate,
 				'subscription_next_payment_date' => $nextPayment,
@@ -190,9 +191,10 @@ class WAMLicense {
 
 		ob_end_clean();
 		header_remove();
+        $filename = $product_info['user_subscriptions'][0]['subscription_title']. "_" . time() . '.lic';
 
-		header( 'Content-type: text/xml' );
-		header( 'Content-Disposition: attachment; filename="license.xml"' );
+        header( 'Content-type: text/xml' );
+		header( 'Content-Disposition: attachment; filename="'.$filename.'"' );
 		echo $xml->asXML();
 		exit();
 	}
