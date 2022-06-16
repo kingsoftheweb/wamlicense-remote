@@ -19,7 +19,16 @@ class GenerateLicense {
                       user_id : userID,
                   },
                   success: function success(response) {
-                      console.log(response);
+                      var a = window.document.createElement('a');
+                      a.href = window.URL.createObjectURL(new Blob([JSON.parse(response,null,2)], {type: 'application/xml'}));
+                      a.download = 'license.xml';
+
+// Append anchor to body.
+                      document.body.appendChild(a);
+                      a.click();
+
+// Remove anchor from body
+                      document.body.removeChild(a);
                   }
               });
 
