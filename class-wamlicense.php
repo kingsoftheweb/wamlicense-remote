@@ -155,7 +155,7 @@ class WAMLicense {
 	 * @throws \Exception
 	 */
 	public function generate_xml( $product_info, $user_id ) {
-		$xml = new SimpleXMLElement( '<license></license>' );
+		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="utf-8"?><license></license>' );
 		$xml->addChild( 'version', 1 );
 		$xml->addChild( 'subscriptionNumber', $product_info['user_subscriptions'][0]['subscription_id'] );
 		$xml->addChild( 'startDate', $product_info['user_subscriptions'][0]['subscription_start_date'] );
