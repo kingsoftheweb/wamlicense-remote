@@ -10,6 +10,7 @@
 namespace wamlicense;
 
 use DateTime;
+use SimpleXMLElement;
 
 class WAMLicense {
 
@@ -19,12 +20,9 @@ class WAMLicense {
 			$this->update_templates();
 
 			// Find an appropiate hook other that init that only runs on my-account page.
+            add_action( 'template_redirect', array($this,'generate_xml_on_request') );
 
-
-            add_action( 'wp_enqueue_scripts', array($this,'generate_license') );
-            add_action( 'wp_footer', array($this,'add_ajax_url') );
-
-            add_action("wp_ajax_generate_xml_on_request", array($this,'generate_xml_on_request'));}
+        }
 
 	}
 
@@ -54,16 +52,20 @@ class WAMLicense {
 	}
 
 
-	/**
-	 * This license to $_GET parameters, and if it has license_generate,
-	 * it will check if appropriate request before actually generating the XML.
-	 *
-	 *
-	 * @return
-	 */
+    /**
+     * This license to $_GET parameters, and if it has license_generate,
+     * it will check if appropriate request before actually generating the XML.
+     *
+     *
+     * @return
+     * @throws \Exception
+     */
 	public function generate_xml_on_request() {
+        if( !is_wc_endpoint_url('downloads')){
+            return false;
+        }
 
-        if (  empty( $_GET['user_id'] ) || empty( $_GET['order_id'] ) ) {
+        if (  ! isset( $_GET['user_id'] ) || ! isset( $_GET['order_id'] ) ) {
             return false;
         }
 
@@ -77,10 +79,11 @@ class WAMLicense {
 		if ( $user_id !== $current_user->ID ) {
 			return false;
 		}
+
+        $product_info = $this ->get_product_information($order_id,$user_id);
+
 		// Generate the XML.
-        $product_info=$this->get_product_information($order_id,$user_id);
-        echo $product_info;
-        die();
+        $this->generate_xml($product_info,$user_id);
 	}
 
     /**
@@ -109,71 +112,58 @@ class WAMLicense {
         foreach($subscriptions_ids as $subscription_id=>$subscription){
             $startDate = $subscription->get_time('start');
             $nextPayment = $subscription->get_time('next_payment');
-            $start_date = new DateTime("@$startDate");
-            $next_payment_date = new DateTime("@$nextPayment");
+            $endDate = $subscription->get_time('end');
             $user_final_subscriptions[]=array(
                     'subscription_id'=>$subscription_id,
-                    'subscription_start_date'=>$start_date->format('Y-m-d H:i:s'),
-                    'subscription_next_payment_date'=> $next_payment_date->format('Y-m-d H:i:s'),
+                    'subscription_start_date'=>$startDate,
+                    'subscription_next_payment_date'=> $nextPayment,
+                    'subscription_end_date'=> $endDate,
             );
         }
 
 		$product_info = array(
                 'order_id' => $order_id,
-                'product' => $order_products_info,
+                'products' => $order_products_info,
                 'user_subscriptions'=>$user_final_subscriptions,
 
 
         );
 
-        return $this->generate_xml($product_info,$user_id);
-//        var_dump($product_info);
+        return $product_info;
 	}
 
-	/**
-	 * This should generate an XML with the correct info for the specific product id and user.
-	 * @return
-	 */
+    /**
+     * This should generate an XML with the correct info for the specific product id and user.
+     * @return
+     * @throws \Exception
+     */
 	public function generate_xml( $product_info, $user_id ) {
-        $final_xml_values='<?xml version="1.0" encoding="utf-8" ?><license><version>1</version>';
-
-        $final_xml_values .='<subscriptionNumber>'.$product_info['user_subscriptions'][0]['subscription_id'].'</subscriptionNumber>';
-
-        $final_xml_values .='<startDate>'.$product_info['user_subscriptions'][0]['subscription_start_date'].'</startDate>';
-
-        $final_xml_values .='<nextPaymentDate>'.$product_info['user_subscriptions'][0]['subscription_next_payment_date'].'</nextPaymentDate>';
-
-        $final_xml_values .='<endDate>'.$product_info['user_subscriptions'][0]['subscription_next_payment_date'].'</endDate>';
-        $final_xml_values .='<parentOrder>'.$product_info['user_subscriptions']['order_id'].'</parentOrder>';
-        $final_xml_values .='<products>';
-
-        foreach($product_info['product'] as $product){
-            $final_xml_values .= '<product>';
-            $final_xml_values .= '<ID>'.$product['product_id'].'</ID>';
-            $final_xml_values .= '<title>'.$product['product_title'].'</title>';
-            $final_xml_values .= '<quantity>'.$product['product_quantity'].'</quantity>';
-            $final_xml_values .= '<sku>'.$product['product_sku'].'</sku>';
-            $final_xml_values .= '</product>';
+        $xml = new SimpleXMLElement("<license></license>");
+        $xml->addChild("version", 1);
+        $xml->addChild("subscriptionNumber", $product_info['user_subscriptions'][0]['subscription_id']);
+        $xml->addChild("startDate", $product_info['user_subscriptions'][0]['subscription_start_date']);
+        $xml->addChild("nextPaymentDate", $product_info['user_subscriptions'][0]['subscription_next_payment_date']);
+        $xml->addChild("endDate", $product_info['user_subscriptions'][0]['subscription_end_date']);
+        $xml->addChild("parentOrder", $product_info['order_id']);
+        $xml->addChild("renewalOrders", '');
+        $products= $xml->addChild("products");
+        $products_array=$product_info['products'];
+        foreach($products_array as $single_product){
+            $product=$products->addChild('product');
+            $product->addChild('ID',$single_product['product_id']);
+            $product->addChild('title',$single_product['product_title']);
+            $product->addChild('quantity',$single_product['product_quantity']);
+            $product->addChild('sku',$single_product['product_sku']);
         }
 
-        $final_xml_values .='</products>';
+        // Products
 
-        $final_xml_values.='</license>';
+        ob_end_clean();
+        header_remove();
 
-        return wp_json_encode($final_xml_values);
-    }
-
-    /**
-     * Enqueuing JS scripts to generate License
-     */
-    public function generate_license() {
-        wp_enqueue_script( 'generate_license', plugin_dir_url( __FILE__ ) . '/assets/js/generate-license.js', array( 'jquery' ) );
-    }
-    public function add_ajax_url() {
-        ?>
-        <script type="text/javascript">
-            var ajaxurl = "<?php echo admin_url( 'admin-ajax.php' ); ?>";
-        </script>
-        <?php
+        header("Content-type: text/xml");
+        header('Content-Disposition: attachment; filename="license.xml"');
+        echo $xml->asXML();
+        exit();
     }
 }
