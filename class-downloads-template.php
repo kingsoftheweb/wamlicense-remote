@@ -33,7 +33,7 @@ class DownloadsTemplate {
         $licence_url = $download_url.'?license_generate=true&order_id='.$order_id.'&user_id='.$user_id;
         // if not, then use global $product;
 
-        echo "<a class='download-product-license' data-order-id='$order_id' data-user-id='$user_id' href='$licence_url'>Download License</a>";
+        echo "<a class='download-product-license' href='$licence_url'>Download License</a>";
     }
 
 }
