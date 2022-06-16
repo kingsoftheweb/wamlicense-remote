@@ -19,14 +19,20 @@ class WAMLicense {
 			// Find an appropiate hook other that init that only runs on my-account page.
 			add_action( 'init', array( $this, 'generate_xml_on_request' ) );
 		}
+
 	}
 
 	/**
 	 * This should check if woocommerce subscriptions is active or no
-	 * @return void
+	 * @return bool
 	 */
 	public function is_woocommerce_subscriptions_active() {
+
+        if (  is_plugin_active( 'woocommerce-subscriptions/woocommerce-subscriptions.php' ) ) {
+            return true;
+        }
 	}
+
 
 	/**
 	 * This should hook into the downloads template, to add the correct action of the Download URL.
