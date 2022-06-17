@@ -94,53 +94,53 @@ class WAMLicense {
 	 * @return array
 	 * @throws \Exception
 	 */
-	public function get_product_information( $order_id, $user_id ) {
-		$order                    = wc_get_order( $order_id );
-		$subscriptions_ids        = wcs_get_subscriptions_for_order( $order_id, array( 'order_type' => 'any' ) );
-		$order_products_info      = array();
-		$user_final_subscriptions = array();
-        $related_orders=array();
+	public function get_product_information( $subscription_id, $user_id ) {
+		$subscription        = new WC_Subscription($subscription_id);
+        $subscription_products_info      = array();
 		$final_related_orders=array();
         $renewal_orders_ids=array();
-        foreach ( $order->get_items() as $item ) {
+        foreach ( $subscription->get_items() as $item ) {
 			$product               = wc_get_product( $item->get_product_id() );
-			$order_products_info[] = array(
+			$subscription_products_info[] = array(
 				'product_id'       => $item->get_id(),
-				'product_title'    => get_the_title( $item->get_product_id() ),
+				'product_title'    => $item['name'],
 				'product_quantity' => $item->get_quantity(),
 				'product_sku'      => $product->get_sku(),
 			);
 		}
 
-    	foreach ( $subscriptions_ids as $subscription_id => $subscription ) {
-            $sub=new WC_Subscription($subscription_id);
-            $related_orders = $sub->get_related_orders('ids','renewal');
+            $related_orders = $subscription->get_related_orders('ids');
 			$startDate                  = $subscription->get_time( 'start' );
 			$nextPayment                = $subscription->get_time( 'next_payment' );
 			$endDate                    = $subscription->get_time( 'end' );
-			$user_final_subscriptions[] = array(
+			$user_subscription = array(
                 'subscription_title'=>'Subscription_'.$subscription_id,
 				'subscription_id'                => $subscription_id,
 				'subscription_start_date'        => $startDate,
 				'subscription_next_payment_date' => $nextPayment,
 				'subscription_end_date'          => $endDate,
+                'subscription_products'=>$subscription_products_info,
+                'subscription_parent_order'=>$subscription->get_parent_id(),
 			);
-		}
+
 
         foreach ($related_orders as $related_subscription_id => $related_subscription_ids){
+            if($related_subscription_id !== $subscription->get_parent_id()){
             $renewal_sub=new WC_Subscription($related_subscription_id);
-            $renewal_orders_ids[]=$related_subscription_id;
+            if(get_post_meta($related_subscription_id,'_subscription_renewal')){
+                    $renewal_orders_ids[]=$related_subscription_id;
+            }
             $final_related_orders[]=array(
                 'subscription_id'=>$related_subscription_id,
                 'subscription_status'=>$renewal_sub->get_status(),
                 'subscription_date'=>$renewal_sub->get_time('start'),
             );
         }
+        }
 
 		$product_info = array(
-			'order_id'           => $order_id,
-			'products'           => $order_products_info,
-			'user_subscriptions' => $user_final_subscriptions,
+			'order_id'           => $subscription_id,
+			'user_subscription'           => $user_subscription,
 			'related_orders' => $final_related_orders,
             'renewal_orders_ids'=>$renewal_orders_ids,
 
@@ -157,11 +157,11 @@ class WAMLicense {
 	public function generate_xml( $product_info, $user_id ) {
 		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="utf-8"?><license></license>' );
 		$xml->addChild( 'version', 1 );
-		$xml->addChild( 'subscriptionNumber', $product_info['user_subscriptions'][0]['subscription_id'] );
-		$xml->addChild( 'startDate', $product_info['user_subscriptions'][0]['subscription_start_date'] );
-		$xml->addChild( 'nextPaymentDate', $product_info['user_subscriptions'][0]['subscription_next_payment_date'] );
-		$xml->addChild( 'endDate', $product_info['user_subscriptions'][0]['subscription_end_date'] );
-		$xml->addChild( 'parentOrder', $product_info['order_id'] );
+		$xml->addChild( 'subscriptionNumber', $product_info['user_subscription']['subscription_id'] );
+		$xml->addChild( 'startDate', $product_info['user_subscription']['subscription_start_date'] );
+		$xml->addChild( 'nextPaymentDate', $product_info['user_subscription']['subscription_next_payment_date'] );
+		$xml->addChild( 'endDate', $product_info['user_subscriptions']['subscription_end_date'] );
+		$xml->addChild( 'parentOrder', $product_info['user_subscription']['subscription_parent_order'] );
 		$xml->addChild( 'renewalOrders',implode(',',$product_info['renewal_orders_ids']) );
 
         // Related orders elements
@@ -191,7 +191,7 @@ class WAMLicense {
 
 		ob_end_clean();
 		header_remove();
-        $filename = $product_info['user_subscriptions'][0]['subscription_title']. "_" . time() . '.lic';
+        $filename = $product_info['user_subscription']['subscription_title']. "_" . time() . '.lic';
 
         header( 'Content-type: text/xml' );
 		header( 'Content-Disposition: attachment; filename="'.$filename.'"' );
