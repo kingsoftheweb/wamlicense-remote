@@ -111,14 +111,17 @@ class WAMLicense {
 
             $related_orders = $subscription->get_related_orders('ids');
 			$startDate                  = $subscription->get_time( 'start' );
+            $final_start_date= Date('Y-m-d H:I:s',$startDate);
 			$nextPayment                = $subscription->get_time( 'next_payment' );
-			$endDate                    = $subscription->get_time( 'end' );
+            $final_next_date= Date('Y-m-d H:I:s',$nextPayment);
+            $endDate                    = $subscription->get_time( 'end' );
+            $final_end_date= Date('Y-m-d H:I:s',$endDate);
 			$user_subscription = array(
                 'subscription_title'=>'Subscription_'.$subscription_id,
 				'subscription_id'                => $subscription_id,
-				'subscription_start_date'        => $startDate,
-				'subscription_next_payment_date' => $nextPayment,
-				'subscription_end_date'          => $endDate,
+				'subscription_start_date'        => $final_start_date,
+				'subscription_next_payment_date' => $final_next_date,
+				'subscription_end_date'          => $final_end_date,
                 'subscription_products'=>$subscription_products_info,
                 'subscription_parent_order'=>$subscription->get_parent_id(),
 			);
