@@ -178,7 +178,7 @@ class WAMLicense {
 
         // Original product elements
         $products       = $xml->addChild( 'products' );
-        $products_array = $product_info['products'];
+        $products_array = $product_info['user_subscription']['subscription_products'];
 		foreach ( $products_array as $single_product ) {
 			$product = $products->addChild( 'product' );
 			$product->addChild( 'ID', $single_product['product_id'] );
@@ -186,7 +186,6 @@ class WAMLicense {
 			$product->addChild( 'quantity', $single_product['product_quantity'] );
 			$product->addChild( 'sku', $single_product['product_sku'] );
 		}
-
 		// Products
 
 		ob_end_clean();
