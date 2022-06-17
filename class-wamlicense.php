@@ -9,6 +9,7 @@
 
 namespace wamlicense;
 
+use DOMDocument;
 use SimpleXMLElement;
 use WC_Subscription;
 use WC_Subscriptions_Renewal_Order;
@@ -111,11 +112,11 @@ class WAMLicense {
 
             $related_orders = $subscription->get_related_orders('ids');
 			$startDate                  = $subscription->get_time( 'start' );
-            $final_start_date= Date('Y-m-d H:I:s',$startDate);
+            $final_start_date= !empty($startDate) ? Date('Y-m-d H:I:s',$startDate) : '' ;
 			$nextPayment                = $subscription->get_time( 'next_payment' );
-            $final_next_date= Date('Y-m-d H:I:s',$nextPayment);
+            $final_next_date= !empty($nextPayment) ? Date('Y-m-d H:I:s',$nextPayment) : '' ;
             $endDate                    = $subscription->get_time( 'end' );
-            $final_end_date= Date('Y-m-d H:I:s',$endDate);
+            $final_end_date= !empty($endDate) ? Date('Y-m-d H:I:s',$endDate) : '' ;
 			$user_subscription = array(
                 'subscription_title'=>'Subscription_'.$subscription_id,
 				'subscription_id'                => $subscription_id,
@@ -163,7 +164,7 @@ class WAMLicense {
 		$xml->addChild( 'subscriptionNumber', $product_info['user_subscription']['subscription_id'] );
 		$xml->addChild( 'startDate', $product_info['user_subscription']['subscription_start_date'] );
 		$xml->addChild( 'nextPaymentDate', $product_info['user_subscription']['subscription_next_payment_date'] );
-		$xml->addChild( 'endDate', $product_info['user_subscriptions']['subscription_end_date'] );
+		$xml->addChild( 'endDate', $product_info['user_subscription']['subscription_end_date'] );
 		$xml->addChild( 'parentOrder', $product_info['user_subscription']['subscription_parent_order'] );
 		$xml->addChild( 'renewalOrders',implode(',',$product_info['renewal_orders_ids']) );
 
@@ -190,14 +191,15 @@ class WAMLicense {
 			$product->addChild( 'sku', $single_product['product_sku'] );
 		}
 		// Products
-
-		ob_end_clean();
-		header_remove();
         $filename = $product_info['user_subscription']['subscription_title']. "_" . time() . '.lic';
-
+        // Formatting the XML with DomDocument and downloading it
+        $newXMLText = $xml->asXML();
+        $dom = new DomDocument();
+        $dom->loadXML($newXMLText);
+        $dom->formatOutput = true;
+        echo  $dom->saveXML();
         header( 'Content-type: text/xml' );
 		header( 'Content-Disposition: attachment; filename="'.$filename.'"' );
-		echo $xml->asXML();
 		exit();
 	}
 }
