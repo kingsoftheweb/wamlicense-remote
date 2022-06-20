@@ -133,10 +133,13 @@ class WAMLicense {
 					if ( get_post_meta( $related_subscription_id, '_subscription_renewal' ) ) {
 						$renewal_orders_ids[] = $related_subscription_id;
 					}
-					$final_related_orders[] = array(
+                    $related_order_date=$renewal_sub->get_time( 'start' );
+                    $final_related_order_date   = ! empty( $related_order_date ) ? Date( 'Y-m-d H:I:s', $related_order_date ) : '';
+
+                    $final_related_orders[] = array(
 						'subscription_id'     => $related_subscription_id,
 						'subscription_status' => $renewal_sub->get_status(),
-						'subscription_date'   => $renewal_sub->get_time( 'start' ),
+						'subscription_date'   => $final_related_order_date,
 					);
 				}
 			}
