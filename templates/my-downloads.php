@@ -74,6 +74,10 @@ $downloads     = WC()->customer->get_downloadable_products();
     </table>
 
     <table class="woocommerce-table woocommerce-table--order-downloads shop_table shop_table_responsive order_details subscriptions_table">
+        <?php
+        $user_id=get_current_user_id();
+        $users_subscriptions = wcs_get_users_subscriptions($user_id);
+        ?>
         <thead>
         <tr>
             <th class=""><span class="nobr">Subscription</span></th>
@@ -83,11 +87,28 @@ $downloads     = WC()->customer->get_downloadable_products();
         </tr>
         </thead>
         <tbody>
-        <tr><td>{subscription}</td></tr>
-        <tr><td>{date}</td></tr>
-        <tr><td>{LIST OF DOWNLOADS}</td></tr>
-        <tr><td>{LIST OF DOWNLOADS}</td></tr>
-        <tr><td>{Download License}</td></tr>
+        <?php foreach($users_subscriptions as $subscription){
+                 $expiry_date=$subscription->get_time('end');
+                $downloads = $subscription->get_downloadable_items();
+             		$download_url = wc_get_endpoint_url( 'downloads' );
+            $licence_url  = $download_url . '?license_generate=true&order_id=' . $subscription->get_id(). '&user_id=' . $user_id;
+
+
+            ?>
+        <tr>
+            <td><?php echo $subscription->get_id(); ?></td>
+            <td><?php echo ! empty( $endDate ) ? Date( 'Y-m-d H:I:s', $endDate ) : ''; ?></td>
+            <td>
+                <ul>
+                <?php foreach($downloads as $download){
+                    echo '<li><a href="' . esc_url( $download['download_url'] ) . '" class="woocommerce-MyAccount-downloads-file button alt">' . esc_html( $download['download_name'] ) . '</a></li>';
+                }
+                ?>
+                </ul>
+            </td>
+            <td><?php 		echo "<a class='download-product-license' href='$licence_url'>Download License</a>"; ?></td>
+        </tr>
+        <?php } ?>
         </tbody>
     </table>
 </section>
