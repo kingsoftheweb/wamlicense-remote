@@ -164,18 +164,19 @@ class WAMLicense {
 	 * @throws \Exception
 	 */
 	public function generate_xml( $product_info, $user_id ) {
-		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="utf-8"?><license></license>' );
-		$xml->addChild( 'version', 1 );
-		$xml->addChild( 'subscriptionNumber', $product_info['user_subscription']['subscription_id'] );
-		$xml->addChild( 'timezone', $this->wpdocs_custom_timezone_string() );
-		$xml->addChild( 'startDate', $product_info['user_subscription']['subscription_start_date'] );
-		$xml->addChild( 'nextPaymentDate', $product_info['user_subscription']['subscription_next_payment_date'] );
-		$xml->addChild( 'endDate', $product_info['user_subscription']['subscription_end_date'] );
-		$xml->addChild( 'parentOrder', $product_info['user_subscription']['subscription_parent_order'] );
-		$xml->addChild( 'renewalOrders', implode( ',', $product_info['renewal_orders_ids'] ) );
+		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="utf-8"?><AJTek></AJTek>' );
+        $license= $xml->addChild( 'license' );
+        $license->addChild( 'version', 1 );
+        $license->addChild( 'subscriptionNumber', $product_info['user_subscription']['subscription_id'] );
+        $license->addChild( 'timezone', $this->wpdocs_custom_timezone_string() );
+        $license->addChild( 'startDate', $product_info['user_subscription']['subscription_start_date'] );
+        $license->addChild( 'nextPaymentDate', $product_info['user_subscription']['subscription_next_payment_date'] );
+        $license->addChild( 'endDate', $product_info['user_subscription']['subscription_end_date'] );
+        $license->addChild( 'parentOrder', $product_info['user_subscription']['subscription_parent_order'] );
+        $license->addChild( 'renewalOrders', implode( ',', $product_info['renewal_orders_ids'] ) );
 
 		// Related orders elements
-		$related_subscriptions = $xml->addChild( 'resubscriptions' );
+		$related_subscriptions = $license->addChild( 'resubscriptions' );
 
 		$related_subscriptions_array = $product_info['related_orders'];
 		foreach ( $related_subscriptions_array as $related_sub ) {
@@ -186,7 +187,7 @@ class WAMLicense {
 		}
 
 		// Original product elements
-		$products       = $xml->addChild( 'products' );
+		$products       = $license->addChild( 'products' );
 		$products_array = $product_info['user_subscription']['subscription_products'];
 		foreach ( $products_array as $single_product ) {
 			$product = $products->addChild( 'product' );
