@@ -167,6 +167,7 @@ class WAMLicense {
 		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="utf-8"?><license></license>' );
 		$xml->addChild( 'version', 1 );
 		$xml->addChild( 'subscriptionNumber', $product_info['user_subscription']['subscription_id'] );
+		$xml->addChild( 'timezone', $this->wpdocs_custom_timezone_string() );
 		$xml->addChild( 'startDate', $product_info['user_subscription']['subscription_start_date'] );
 		$xml->addChild( 'nextPaymentDate', $product_info['user_subscription']['subscription_next_payment_date'] );
 		$xml->addChild( 'endDate', $product_info['user_subscription']['subscription_end_date'] );
@@ -206,4 +207,18 @@ class WAMLicense {
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
 		exit();
 	}
+
+    function wpdocs_custom_timezone_string() {
+        $timezone_string = get_option( 'timezone_string' );
+        $offset  = (float) get_option( 'gmt_offset' );
+        $hours   = (int) $offset;
+        $minutes = ( $offset - $hours );
+        $sign      = ( $offset < 0 ) ? '-' : '+';
+        $abs_hour  = abs( $hours );
+        $abs_mins  = abs( $minutes * 60 );
+        $tz_offset = sprintf( '%s%02d:%02d', $sign, $abs_hour, $abs_mins );
+        $final_tz_offset = str_replace(':', '', $tz_offset );
+
+        return $final_tz_offset;
+    }
 }

@@ -21,7 +21,7 @@ class WCTemplateLoader {
 
     function csp_locate_template( $template, $template_name, $template_path ) {
         $wc_endpoint=is_wc_endpoint_url('downloads');
-        if( $wc_endpoint ) {
+        if( is_user_logged_in() && $wc_endpoint ) {
             $template = trailingslashit( WP_PLUGIN_DIR ) . 'wamlicense/templates/my-downloads.php';
         }
         return $template;
