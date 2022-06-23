@@ -13,7 +13,6 @@ use DOMDocument;
 use SimpleXMLElement;
 use WC_Subscription;
 use WC_Subscriptions_Renewal_Order;
-
 class WAMLicense {
 
 	public function __construct() {
@@ -47,8 +46,12 @@ class WAMLicense {
 	 */
 	public function update_templates() {
 
-		// Update the downloads' template using this function to add new column.
-		$downloads_template = new DownloadsTemplate();
+        // Loading custom WC downloads template
+		$wc_template_loader = new WCTemplateLoader();
+        $wc_template_loader->load_custom_wc_template();
+
+        // Update the downloads' template using this function to add new column.
+        $downloads_template = new DownloadsTemplate();
 		$downloads_template->update_templates();
 
 	}
