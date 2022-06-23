@@ -46,12 +46,12 @@ class WAMLicense {
 	 */
 	public function update_templates() {
 
-        // Loading custom WC downloads template
+		// Loading custom WC downloads template
 		$wc_template_loader = new WCTemplateLoader();
-        $wc_template_loader->load_custom_wc_template();
+		$wc_template_loader->load_custom_wc_template();
 
-        // Update the downloads' template using this function to add new column.
-        $downloads_template = new DownloadsTemplate();
+		// Update the downloads' template using this function to add new column.
+		$downloads_template = new DownloadsTemplate();
 		$downloads_template->update_templates();
 
 	}
@@ -136,10 +136,10 @@ class WAMLicense {
 					if ( get_post_meta( $related_subscription_id, '_subscription_renewal' ) ) {
 						$renewal_orders_ids[] = $related_subscription_id;
 					}
-                    $related_order_date=$renewal_sub->get_time( 'start' );
-                    $final_related_order_date   = ! empty( $related_order_date ) ? Date( 'Y-m-d H:I:s', $related_order_date ) : '';
+					$related_order_date       = $renewal_sub->get_time( 'start' );
+					$final_related_order_date = ! empty( $related_order_date ) ? Date( 'Y-m-d H:I:s', $related_order_date ) : '';
 
-                    $final_related_orders[] = array(
+					$final_related_orders[] = array(
 						'subscription_id'     => $related_subscription_id,
 						'subscription_status' => $renewal_sub->get_status(),
 						'subscription_date'   => $final_related_order_date,
@@ -164,16 +164,16 @@ class WAMLicense {
 	 * @throws \Exception
 	 */
 	public function generate_xml( $product_info, $user_id ) {
-		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="utf-8"?><AJTek></AJTek>' );
-        $license= $xml->addChild( 'license' );
-        $license->addChild( 'version', 1 );
-        $license->addChild( 'subscriptionNumber', $product_info['user_subscription']['subscription_id'] );
-        $license->addChild( 'timezone', $this->wpdocs_custom_timezone_string() );
-        $license->addChild( 'startDate', $product_info['user_subscription']['subscription_start_date'] );
-        $license->addChild( 'nextPaymentDate', $product_info['user_subscription']['subscription_next_payment_date'] );
-        $license->addChild( 'endDate', $product_info['user_subscription']['subscription_end_date'] );
-        $license->addChild( 'parentOrder', $product_info['user_subscription']['subscription_parent_order'] );
-        $license->addChild( 'renewalOrders', implode( ',', $product_info['renewal_orders_ids'] ) );
+		$xml     = new SimpleXMLElement( '<?xml version="1.0" encoding="utf-8"?><AJTek></AJTek>' );
+		$license = $xml->addChild( 'license' );
+		$license->addChild( 'version', 1 );
+		$license->addChild( 'subscriptionNumber', $product_info['user_subscription']['subscription_id'] );
+		$license->addChild( 'timezone', $this->wpdocs_custom_timezone_string() );
+		$license->addChild( 'startDate', $product_info['user_subscription']['subscription_start_date'] );
+		$license->addChild( 'nextPaymentDate', $product_info['user_subscription']['subscription_next_payment_date'] );
+		$license->addChild( 'endDate', $product_info['user_subscription']['subscription_end_date'] );
+		$license->addChild( 'parentOrder', $product_info['user_subscription']['subscription_parent_order'] );
+		$license->addChild( 'renewalOrders', implode( ',', $product_info['renewal_orders_ids'] ) );
 
 		// Related orders elements
 		$related_subscriptions = $license->addChild( 'resubscriptions' );
@@ -209,17 +209,17 @@ class WAMLicense {
 		exit();
 	}
 
-    function wpdocs_custom_timezone_string() {
-        $timezone_string = get_option( 'timezone_string' );
-        $offset  = (float) get_option( 'gmt_offset' );
-        $hours   = (int) $offset;
-        $minutes = ( $offset - $hours );
-        $sign      = ( $offset < 0 ) ? '-' : '+';
-        $abs_hour  = abs( $hours );
-        $abs_mins  = abs( $minutes * 60 );
-        $tz_offset = sprintf( '%s%02d:%02d', $sign, $abs_hour, $abs_mins );
-        $final_tz_offset = str_replace(':', '', $tz_offset );
+	function wpdocs_custom_timezone_string() {
+		$timezone_string = get_option( 'timezone_string' );
+		$offset          = (float) get_option( 'gmt_offset' );
+		$hours           = (int) $offset;
+		$minutes         = ( $offset - $hours );
+		$sign            = ( $offset < 0 ) ? '-' : '+';
+		$abs_hour        = abs( $hours );
+		$abs_mins        = abs( $minutes * 60 );
+		$tz_offset       = sprintf( '%s%02d:%02d', $sign, $abs_hour, $abs_mins );
+		$final_tz_offset = str_replace( ':', '', $tz_offset );
 
-        return $final_tz_offset;
-    }
+		return $final_tz_offset;
+	}
 }
