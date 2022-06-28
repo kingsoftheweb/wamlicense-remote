@@ -85,8 +85,12 @@ class WAMLicense {
 
 		$product_info = $this->get_product_information( $order_id, $user_id );
 
-		// Generate the XML.
-		$this->generate_xml( $product_info, $user_id );
+		// Get license tag content.
+		$license_content=$this->get_license_content( $product_info, $user_id );
+
+        $digital_signature=$this->hash_content_with_private_key($license_content);
+
+        $this->generate_xml($product_info,$user_id,$digital_signature);
 	}
 
 	/**
@@ -158,12 +162,71 @@ class WAMLicense {
 			return $product_info;
 	}
 
-	/**
+    /**
+     * @param $product_info
+     * @param $user_id
+     * @return
+     */
+
+    public function get_license_content( $product_info, $user_id ) {
+        $xml     = new SimpleXMLElement( '<license></license>' );
+        $xml->addChild( 'subscriptionNumber', $product_info['user_subscription']['subscription_id'] );
+        $xml->addChild( 'timezone', $this->wpdocs_custom_timezone_string() );
+        $xml->addChild( 'startDate', $product_info['user_subscription']['subscription_start_date'] );
+        $xml->addChild( 'nextPaymentDate', $product_info['user_subscription']['subscription_next_payment_date'] );
+        $xml->addChild( 'endDate', $product_info['user_subscription']['subscription_end_date'] );
+        $xml->addChild( 'parentOrder', $product_info['user_subscription']['subscription_parent_order'] );
+        $xml->addChild( 'renewalOrders', implode( ',', $product_info['renewal_orders_ids'] ) );
+
+        // Related orders elements
+        $related_subscriptions = $xml->addChild( 'resubscriptions' );
+
+        $related_subscriptions_array = $product_info['related_orders'];
+        foreach ( $related_subscriptions_array as $related_sub ) {
+            $subscription = $related_subscriptions->addChild( 'subscription' );
+            $subscription->addChild( 'ID', $related_sub['subscription_id'] );
+            $subscription->addChild( 'status', $related_sub['subscription_status'] );
+            $subscription->addChild( 'date', $related_sub['subscription_date'] );
+        }
+
+        // Original product elements
+        $products       = $xml->addChild( 'products' );
+        $products_array = $product_info['user_subscription']['subscription_products'];
+        foreach ( $products_array as $single_product ) {
+            $product = $products->addChild( 'product' );
+            $product->addChild( 'ID', $single_product['product_id'] );
+            $product->addChild( 'title', $single_product['product_title'] );
+            $product->addChild( 'quantity', $single_product['product_quantity'] );
+            $product->addChild( 'sku', $single_product['product_sku'] );
+        }
+
+        // Getting the XML starting from <license> tag
+        $dom = dom_import_simplexml($xml);
+		return $dom->ownerDocument->saveXML($dom->ownerDocument->documentElement);
+    }
+
+    /**
+     * @param $content
+     * @param $private_key
+     * @return string
+     */
+
+    public function hash_content_with_private_key($license_content){
+
+        $signature = '';
+        openssl_sign($license_content, $signature,PRIVATE_KEY,OPENSSL_ALGO_SHA256);
+
+        return base64_encode($signature);
+
+    }
+
+
+    /**
 	 * This should generate an XML with the correct info for the specific product id and user.
 	 * @return
 	 * @throws \Exception
 	 */
-	public function generate_xml( $product_info, $user_id ) {
+	public function generate_xml( $product_info, $user_id,$digital_signature ) {
 		$xml     = new SimpleXMLElement( '<?xml version="1.0" encoding="utf-8"?><AJTek></AJTek>' );
 		$license = $xml->addChild( 'license' );
 		$license->addChild( 'version', 1 );
@@ -196,10 +259,12 @@ class WAMLicense {
 			$product->addChild( 'quantity', $single_product['product_quantity'] );
 			$product->addChild( 'sku', $single_product['product_sku'] );
 		}
+        $xml->addChild( 'licenseHash',$digital_signature    );
 		// Products
 		$filename = $product_info['user_subscription']['subscription_title'] . '_' . time() . '.lic';
 		// Formatting the XML with DomDocument and downloading it
 		$newXMLText = $xml->asXML();
+
 		$dom        = new DomDocument();
 		$dom->loadXML( $newXMLText );
 		$dom->formatOutput = true;
