@@ -86,10 +86,8 @@ class WAMLicense {
 		$product_info = $this->get_product_information( $order_id, $user_id );
 
 		// Get license tag content.
-		$license_content=$this->get_license_content( $product_info, $user_id );
-
+        $license_content=$this->get_license_content( $product_info, $user_id );
         $digital_signature=$this->hash_content_with_private_key($license_content);
-
         $this->generate_xml($product_info,$user_id,$digital_signature);
 	}
 
@@ -201,8 +199,12 @@ class WAMLicense {
         }
 
         // Getting the XML starting from <license> tag
-        $dom = dom_import_simplexml($xml);
-		return $dom->ownerDocument->saveXML($dom->ownerDocument->documentElement);
+        $newXMLText = $xml->asXML();
+        $dom        = new DomDocument();
+        $dom->loadXML( $newXMLText );
+        $dom->formatOutput = true;
+        return $dom->saveXML($dom->documentElement);
+
     }
 
     /**
