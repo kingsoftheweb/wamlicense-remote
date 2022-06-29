@@ -89,10 +89,11 @@ class WAMLicense {
         // Get license tag content.
         $license_content = $this->get_license_element_content($product_info, $user_id);
         $digital_signature = $this->hash_content_with_private_key($license_content);
-        $license_file_content = $this->get_license_file_content($product_info, $user_id, $digital_signature);
+        $license_file_array = $this->get_license_file_content($product_info, $user_id, $digital_signature);
+        $license_file_content=$license_file_array['content'];
+        $license_name=$license_file_array['filename'];
         $encrypted_license = $this->encrypt_license($license_file_content);
-        $this->generate_license($encrypted_license);
-
+        $this->generate_license($encrypted_license,$license_name);
         /**
          * You can call the decryption method here to test the encryption/decryption process
          * $this->decrypt_license('{content_here}');
@@ -259,11 +260,10 @@ class WAMLicense {
      * @param $encrypted_license
      * @return void
      */
-    public function generate_license($encrypted_license){
+    public function generate_license($encrypted_license,$license_name){
         echo $encrypted_license;
-        $filename='Mo.lic';
         header( 'Content-type: text/xml' );
-        header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+        header( 'Content-Disposition: attachment; filename="' . $license_name . '"' );
         exit();
     }
 
@@ -315,7 +315,10 @@ class WAMLicense {
 
 		$dom = new DomDocument();
 		$dom->loadXML( $newXMLText );
-		return $dom->saveXML();
+		return array(
+            'filename'=>$filename,
+            'content'=> $dom->saveXML()
+        );
 	}
 
 	function wpdocs_custom_timezone_string() {
