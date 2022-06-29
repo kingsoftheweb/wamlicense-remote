@@ -73,16 +73,14 @@ $downloads = WC()->customer->get_downloadable_products();
 		<?php endforeach; ?>
 	</table>
 
-    <!-- Render the subscription table if there are subscriptions -->
-    <?php
-    $user_id             = get_current_user_id();
-    $users_subscriptions = wcs_get_users_subscriptions( $user_id );
-    if(count($users_subscriptions) > 0){
-    ?>
-	<table class="woocommerce-table woocommerce-table--order-downloads shop_table shop_table_responsive order_details subscriptions_table">
-		<?php
+	<!-- Render the subscription table if there are subscriptions -->
+	<?php
+	$user_id             = get_current_user_id();
+	$users_subscriptions = wcs_get_users_subscriptions( $user_id );
+	if ( count( $users_subscriptions ) > 0 ) {
 		?>
-		<thead style="text-align: center">
+	<table class="woocommerce-table woocommerce-table--order-downloads shop_table shop_table_responsive order_details subscriptions_table">
+				<thead style="text-align: center">
 		<tr>
 			<th class=""><span class="nobr">Subscription Number</span></th>
 			<th class=""><span class="nobr">Downloads</span></th>
@@ -114,5 +112,5 @@ $downloads = WC()->customer->get_downloadable_products();
 		<?php } ?>
 		</tbody>
 	</table>
-    <?php } ?>
+	<?php } ?>
 </section>

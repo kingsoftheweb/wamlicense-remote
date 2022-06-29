@@ -60,5 +60,5 @@ FIYcZFMgYXMqKv3/SDfhfjFpNyHFgDyucAC1gpQWejfFqIc=
 EOD;
 
 
-define('PRIVATE_KEY',$private_key);
-define('PUBLIC_KEY',$public_key);
+define( 'PRIVATE_KEY', $private_key );
+define( 'PUBLIC_KEY', $public_key );
