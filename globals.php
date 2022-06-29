@@ -59,6 +59,11 @@ FIYcZFMgYXMqKv3/SDfhfjFpNyHFgDyucAC1gpQWejfFqIc=
 
 EOD;
 
+$encryption_key='38LuGAGHNfJ6pu+HH90gehiCo8laxuMutNozkV+43A0=';
+$initialization_vector= 'S2k/pwMMKW8pGoof04WfEQ==';
 
+// Defining the constants
 define( 'PRIVATE_KEY', $private_key );
 define( 'PUBLIC_KEY', $public_key );
+define( 'ENCRYPTION_KEY', $encryption_key );
+define( 'IV', $initialization_vector );

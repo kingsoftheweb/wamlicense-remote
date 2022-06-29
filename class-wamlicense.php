@@ -65,32 +65,40 @@ class WAMLicense {
 	 * @return
 	 * @throws \Exception
 	 */
-	public function generate_xml_on_request() {
-		if ( ! is_wc_endpoint_url( 'downloads' ) ) {
-			return false;
-		}
+	public function generate_xml_on_request()
+    {
+        if (!is_wc_endpoint_url('downloads')) {
+            return false;
+        }
 
-		if ( ! isset( $_GET['user_id'] ) || ! isset( $_GET['order_id'] ) ) {
-			return false;
-		}
+        if (!isset($_GET['user_id']) || !isset($_GET['order_id'])) {
+            return false;
+        }
 
-		$user_id  = (int) $_GET['user_id'];
-		$order_id = (int) $_GET['order_id'];
+        $user_id = (int)$_GET['user_id'];
+        $order_id = (int)$_GET['order_id'];
 
-		// Check if the incoming user_id is the same as the current user id.
-		$current_user = wp_get_current_user();
-		if ( $user_id !== $current_user->ID ) {
-			return false;
-		}
+        // Check if the incoming user_id is the same as the current user id.
+        $current_user = wp_get_current_user();
+        if ($user_id !== $current_user->ID) {
+            return false;
+        }
 
-		$product_info = $this->get_product_information( $order_id, $user_id );
+        $product_info = $this->get_product_information($order_id, $user_id);
 
-		// Get license tag content.
-		 $license_content  = $this->get_license_content( $product_info, $user_id );
-		$digital_signature = $this->hash_content_with_private_key( $license_content );
-		$this->generate_xml( $product_info, $user_id, $digital_signature );
-	}
+        // Get license tag content.
+        $license_content = $this->get_license_element_content($product_info, $user_id);
+        $digital_signature = $this->hash_content_with_private_key($license_content);
+        $license_file_content = $this->get_license_file_content($product_info, $user_id, $digital_signature);
+        $encrypted_license = $this->encrypt_license($license_file_content);
+        $this->generate_license($encrypted_license);
 
+        /**
+         * You can call the decryption method here to test the encryption/decryption process
+         * $this->decrypt_license('{content_here}');
+         */
+
+    }
 	/**
 	 * This should return an array of product information that will be
 	 * used for the XML export.
@@ -166,7 +174,7 @@ class WAMLicense {
 	 * @return
 	 */
 
-	public function get_license_content( $product_info, $user_id ) {
+	public function get_license_element_content( $product_info, $user_id ) {
 		$xml = new SimpleXMLElement( '<license></license>' );
 		$xml->addChild( 'version', 1 );
 		$xml->addChild( 'subscriptionNumber', $product_info['user_subscription']['subscription_id'] );
@@ -218,13 +226,55 @@ class WAMLicense {
 
 	}
 
+    /**
+     * This is the encryption method to AES-256-cbc
+     * @param $license_file_content
+     * @return false|string
+     */
+
+    public function encrypt_license($license_file_content){
+        $decoded_key=base64_decode(ENCRYPTION_KEY);
+        $decoded_iv=base64_decode(IV);
+        $encryption_method='aes-256-cbc';
+        $encrypted_content = openssl_encrypt($license_file_content,$encryption_method,$decoded_key,0 ,$decoded_iv);
+        return $encrypted_content;
+    }
+
+    /**
+     * This one decrypts the encoded license, you can call it any time to test decryption process
+     * @param $encoded_content
+     * @return false|string
+     */
+
+    public function decrypt_license($encoded_content){
+        $decoded_key=base64_decode(ENCRYPTION_KEY);
+        $decoded_iv=base64_decode(IV);
+        $encryption_method='aes-256-cbc';
+        $encrypted_content = openssl_decrypt($encoded_content,$encryption_method,$decoded_key,0 ,$decoded_iv);
+        return $encrypted_content;
+    }
+
+    /**
+     * This function creates the encoded final file license
+     * @param $encrypted_license
+     * @return void
+     */
+    public function generate_license($encrypted_license){
+        echo $encrypted_license;
+        $filename='Mo.lic';
+        header( 'Content-type: text/xml' );
+        header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+        exit();
+    }
+
+
 
 	/**
 	 * This should generate an XML with the correct info for the specific product id and user.
 	 * @return
 	 * @throws \Exception
 	 */
-	public function generate_xml( $product_info, $user_id, $digital_signature ) {
+	public function get_license_file_content( $product_info, $user_id, $digital_signature ) {
 		$xml     = new SimpleXMLElement( '<?xml version="1.0" encoding="utf-8"?><AJTek></AJTek>' );
 		$license = $xml->addChild( 'license' );
 		$license->addChild( 'version', 1 );
@@ -265,10 +315,7 @@ class WAMLicense {
 
 		$dom = new DomDocument();
 		$dom->loadXML( $newXMLText );
-		echo $dom->saveXML();
-		header( 'Content-type: text/xml' );
-		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-		exit();
+		return $dom->saveXML();
 	}
 
 	function wpdocs_custom_timezone_string() {
