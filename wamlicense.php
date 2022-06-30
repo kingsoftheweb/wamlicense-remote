@@ -3,7 +3,7 @@
  * Plugin Name: WAM License
  * Plugin URI:
  * Description: Generates XML license for WAM products.
- * Version: 2022.06.29.3
+ * Version: 2022.06.30.1
  * Author: AJ Tek Corporation
  * Author URI:
  * Text Domain: wamlicense
