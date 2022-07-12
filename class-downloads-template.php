@@ -21,7 +21,10 @@ class DownloadsTemplate {
 
 	// Add new column "Download License"
 	public function add_download_licence_row( $columns ) {
-		$columns['download-license'] = __( 'Download License', 'woocommerce' );
+        $download_url = wc_get_endpoint_url( 'downloads' );
+        if(is_wc_endpoint_url($download_url)){
+            $columns['download-license'] = __( 'Download License', 'woocommerce' );
+        }
 		return $columns;
 	}
 
