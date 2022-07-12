@@ -17,6 +17,7 @@ class DownloadsTemplate {
 	public function update_templates() {
 		add_filter( 'woocommerce_account_downloads_columns', array( $this, 'add_download_licence_row' ), 1, 99 );
 		add_action( 'woocommerce_account_downloads_column_download-license', array( $this, 'add_license_to_downloads_rows' ), 1, 99 );
+		add_action( 'wp_head', array( $this, 'center_download_license_item' ));
 	}
 
 	// Add new column "Download License"
@@ -36,7 +37,16 @@ class DownloadsTemplate {
 		$licence_url  = $download_url . '?license_generate=true&order_id=' . $order_id . '&user_id=' . $user_id;
 		// if not, then use global $product;
 
-		echo "<a class='download-product-license' href='$licence_url'>Download License</a>";
+		echo "<td style='text-align: center'><a class='download-product-license' href='$licence_url'>Download License</a></td>";
 	}
+
+    public function center_download_license_item(){
+        echo '<style>
+.woocommerce-table--order-downloads tbody tr td:nth-child(3){
+text-align: center;
+}
+
+</style>';
+    }
 
 }
