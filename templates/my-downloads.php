@@ -43,11 +43,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<tbody>
 		<?php
 		foreach ( $users_subscriptions as $subscription ) {
-				$downloads        = $subscription->get_downloadable_items();
-					$download_url = wc_get_endpoint_url( 'downloads' );
+            $downloads = WC()->customer->get_downloadable_products();
+            $download_url = wc_get_endpoint_url( 'downloads' );
 			$licence_url          = $download_url . '?license_generate=true&order_id=' . $subscription->get_id() . '&user_id=' . $user_id;
 
-
+            $downloads_subscription = [];
+            foreach($downloads as $download){
+                if($download['order_id'] === $subscription->get_id()){
+                    $downloads_subscription[] = $download;
+                }
+                $downloads = $downloads_subscription;
+            }
 			?>
 		<tr>
 			<td><?php echo $subscription->get_id(); ?></td>
