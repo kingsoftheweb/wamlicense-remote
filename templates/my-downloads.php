@@ -56,7 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             }
 			?>
 		<tr>
-			<td><?php echo $subscription->get_id(); ?></td>
+			<td style="text-align: center"><a href="<?php echo $subscription->get_view_order_url(); ?>"><?php echo $subscription->get_id(); ?></td>
 			<td>
 				<ul style="display: grid">
 				<?php
