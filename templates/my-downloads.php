@@ -20,6 +20,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 // Get customer downloads
 ?>
+<style>
+        .downloads-file-names a{
+            text-transform: none;
+        }
+</style>
 <section class="woocommerce-order-downloads">
 	<?php if ( isset( $show_title ) ) : ?>
 		<h2 class="woocommerce-order-downloads__title"><?php esc_html_e( 'Downloads', 'woocommerce' ); ?></h2>
@@ -58,7 +63,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<tr>
 			<td style="text-align: center;"><a href="<?php echo $subscription->get_view_order_url(); ?>"><?php echo $subscription->get_id(); ?></td>
 			<td>
-				<ul style="display: grid">
+				<ul style="display: grid" class="downloads-file-names">
 				<?php
 				foreach ( $downloads as $download ) {
 					echo '<li><a href="' . esc_url( $download['download_url'] ) . '" class="woocommerce-MyAccount-downloads-file button alt">' . esc_html( $download['download_name'] ) . '</a></li>';
